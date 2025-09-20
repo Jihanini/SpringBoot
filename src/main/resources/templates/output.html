@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>출력 페이지</title>
+</head>
+<body>
+<h1>출력 결과</h1>
+
+<!-- Controller에서 model.addAttribute("userText", userText) 로 담은 값 출력 -->
+<p th:text="${userText}">여기에 값이 출력됩니다</p>
+
+<a href="/input">다시 입력하기</a>
+</body>
+</html>
