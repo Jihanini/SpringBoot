@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <title>나의 할일 관리</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #f4f4f4; }
+        a, button { margin-right: 6px; }
+    </style>
+</head>
+<body>
+<h1>📝 나의 할일 관리</h1>
+<a href="/view/todos/new">[새 할일 추가]</a>
+
+<table>
+    <thead>
+    <tr>
+        <th>완료</th>
+        <th>제목</th>
+        <th>우선순위</th>
+        <th>설명</th>
+        <th>작업</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="todo : ${todos}">
+        <td>
+            <span th:text="${todo.completed ? '☑' : '☐'}"></span>
+        </td>
+        <td th:text="${todo.title}"></td>
+        <td th:text="${todo.priority}"></td>
+        <td th:text="${todo.description}"></td>
+        <td>
+            <a th:href="@{'/view/todos/' + ${todo.id} + '/edit'}">수정</a>
+            <a th:href="@{'/view/todos/' + ${todo.id} + '/delete'}">삭제</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
