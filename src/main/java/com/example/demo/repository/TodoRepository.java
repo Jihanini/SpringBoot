@@ -1,10 +1,11 @@
-package com.example.demo.todo.model;
-import com.example.demo.todo.model.Todo;
+package com.example.demo.repository;
+
+import com.example.demo.model.Todo;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -13,7 +14,7 @@ public class TodoRepository {
     private final Map<Long, Todo> store = new HashMap<>();
     private final AtomicLong idGenerator = new AtomicLong();
 
-    // 생성 (Create)1234
+    // 생성 (Create)
     public Todo save(Todo todo) {
         if (todo.getId() == null) {
             todo.setId(idGenerator.incrementAndGet());
@@ -27,11 +28,17 @@ public class TodoRepository {
         return new ArrayList<>(store.values());
     }
 
-    // 상세조회 (Read)
-
-    public Optional<Todo> findId(Long id) {
+    // Read - 상세 조회
+    public Optional<Todo> findById(Long id) {
         return Optional.ofNullable(store.get(id));
     }
+    // Update
+    public Todo update(Long id, Todo todo) {
+        store.put(id, todo);
+        return todo;
+    }
+
+
     // 삭제(Delete
     public void delete(Long id) {
         store.remove(id);
