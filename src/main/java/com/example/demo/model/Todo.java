@@ -1,12 +1,5 @@
 package com.example.demo.model;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@Controller
-@RequestMapping("/view/todos")
 public class Todo {
     private Long id;//ID
     private String title; //제목

@@ -234,6 +234,7 @@
             align-items: center;
             gap: var(--spacing-sm);
             cursor: pointer;
+            position: relative;
         }
 
         .checkbox-custom {
@@ -245,27 +246,30 @@
             align-items: center;
             justify-content: center;
             transition: all var(--transition);
+            pointer-events: none;
         }
 
         .checkbox-input {
             position: absolute;
             opacity: 0;
-            width: 0;
-            height: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            cursor: pointer;
+            z-index: 1;
         }
 
-        .checkbox-input:checked + .checkbox-custom {
+        .checkbox-input:checked ~ .checkbox-custom {
             background: var(--success);
             border-color: var(--success);
         }
 
-        .checkbox-input:checked + .checkbox-custom::after {
+        .checkbox-input:checked ~ .checkbox-custom::after {
             content: '✓';
             color: white;
             font-weight: 700;
         }
 
-        .checkbox-input:focus-visible + .checkbox-custom {
+        .checkbox-input:focus-visible ~ .checkbox-custom {
             outline: 2px solid var(--primary);
             outline-offset: 2px;
         }
@@ -457,7 +461,6 @@
                 <div class="checkbox-group">
                     <label class="checkbox-wrapper">
                         <input type="checkbox"
-                               id="completed"
                                th:field="*{completed}"
                                class="checkbox-input"
                                aria-describedby="completedHelp">

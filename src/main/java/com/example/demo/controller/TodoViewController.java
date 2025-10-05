@@ -20,7 +20,7 @@ public class TodoViewController {
     @GetMapping
     public String list(Model model) {
         model.addAttribute("todos", service.getAllTodos());
-        return "main";
+        return "main-improved";
     }
 
     // correction 페이지
@@ -33,7 +33,7 @@ public class TodoViewController {
     @GetMapping("/new")
     public String newForm(Model model) {
         model.addAttribute("todo", new Todo());
-        return "correction";
+        return "form-improved";
     }
 
     // 수정 폼
@@ -41,7 +41,7 @@ public class TodoViewController {
     public String editForm(@PathVariable Long id, Model model) {
         Todo todo = service.getTodoById(id).orElseThrow();
         model.addAttribute("todo", todo);
-        return "edit";
+        return "form-improved";
     }
 
     //저장 관리 (추가나 수정)
