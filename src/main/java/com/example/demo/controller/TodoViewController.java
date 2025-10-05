@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.*;
     @RequestMapping("/view/todos")
 public class TodoViewController {
     // 메인 페이지 (http://localhost:8080/)
-    @GetMapping("/")
+    @GetMapping("/view/todos")
     public String mainPage() {
         return "main"; // templates/main.html 렌더링
     }
 
     // correction 페이지 (http://localhost:8080/correction)
-    @GetMapping("/correction")
+    @GetMapping("/view/todos/correction")
     public String correctionPage() {
         return "correction"; // templates/correction.html 렌더링
     }
@@ -28,7 +28,7 @@ public class TodoViewController {
     }
 
     //메인 페이지 (할일 목록)
-    @GetMapping
+    @GetMapping("/view/todos")
     public String list(Model model) {
         model.addAttribute("todos", service.getAllTodos());
         return "main"; // main.html 한번 거쳐가라
