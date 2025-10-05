@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>할일 관리 - Todo Manager</title>
+    <style>
+        /* ==================== CSS Variables ==================== */
+        :root {
+            /* Colors */
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+
+            /* Border Radius */
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+            /* Transitions */
+            --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ==================== Reset & Base ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-800);
+            background: var(--gray-50);
+            min-height: 100vh;
+        }
+
+        /* ==================== Layout ==================== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-md);
+        }
+
+        @media (min-width: 640px) {
+            .container {
+                padding: var(--spacing-lg);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                padding: var(--spacing-xl);
+            }
+        }
+
+        /* ==================== Header ==================== */
+        .app-header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: var(--spacing-lg) 0;
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .app-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        /* ==================== Stats Bar ==================== */
+        .stats-bar {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-top: var(--spacing-xs);
+        }
+
+        .progress-bar {
+            height: 0.5rem;
+            background: var(--gray-200);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-top: var(--spacing-md);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            transition: width var(--transition);
+        }
+
+        /* ==================== Filters ==================== */
+        .filters-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            background: white;
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .filter-tab:hover {
+            background: var(--gray-50);
+            border-color: var(--primary);
+        }
+
+        .filter-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) 2.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: all var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+        }
+
+        /* ==================== Todo Grid ==================== */
+        .todo-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        @media (min-width: 640px) {
+            .todo-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .todo-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* ==================== Todo Card ==================== */
+        .todo-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition);
+            border-left: 4px solid var(--gray-300);
+            position: relative;
+        }
+
+        .todo-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .todo-card.completed {
+            opacity: 0.7;
+        }
+
+        .todo-card.completed .todo-title {
+            text-decoration: line-through;
+            color: var(--gray-500);
+        }
+
+        /* Priority borders */
+        .todo-card.priority-HIGH {
+            border-left-color: var(--danger);
+        }
+
+        .todo-card.priority-MEDIUM {
+            border-left-color: var(--warning);
+        }
+
+        .todo-card.priority-LOW {
+            border-left-color: var(--success);
+        }
+
+        .todo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: var(--spacing-md);
+            gap: var(--spacing-sm);
+        }
+
+        .todo-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .priority-badge {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .priority-badge.HIGH {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .priority-badge.MEDIUM {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .priority-badge.LOW {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .todo-description {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* ==================== Checkbox ==================== */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-custom {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition);
+        }
+
+        .checkbox-wrapper:hover .checkbox-custom {
+            border-color: var(--primary);
+        }
+
+        .checkbox-custom.checked {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkbox-custom.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+
+        /* ==================== Buttons ==================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #DC2626;
+        }
+
+        .btn-icon {
+            padding: var(--spacing-sm);
+            min-width: 2rem;
+            justify-content: center;
+        }
+
+        .btn-lg {
+            padding: var(--spacing-md) var(--spacing-xl);
+            font-size: 1rem;
+        }
+
+        /* ==================== Empty State ==================== */
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .empty-state-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .empty-state-text {
+            color: var(--gray-500);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        /* ==================== Accessibility ==================== */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* ==================== Utilities ==================== */
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-md {
+            gap: var(--spacing-md);
+        }
+
+        .mt-lg {
+            margin-top: var(--spacing-lg);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span>📝</span>
+                    <span>할일 관리</span>
+                </h1>
+                <a href="/view/todos/new" class="btn btn-primary btn-lg">
+                    <span>+</span>
+                    <span>새 할일 추가</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Stats Bar -->
+        <section class="stats-bar" aria-label="할일 통계">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" th:text="${todos.size()}">0</div>
+                    <div class="stat-label">전체 할일</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" th:text="${completedCount}">0</div>
+                    <div class="stat-label">완료</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" th:text="${activeCount}">0</div>
+                    <div class="stat-label">진행 중</div>
+                </div>
+            </div>
+            <div class="progress-bar" role="progressbar"
+                 th:attr="aria-valuenow=${progressPercent},
+                         aria-valuemin=0,
+                         aria-valuemax=100">
+                <div class="progress-fill"
+                     th:style="${'width: ' + progressPercent + '%'}">
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters -->
+        <section class="filters-section" aria-label="필터 및 검색">
+            <div class="filter-tabs" role="tablist">
+                <button class="filter-tab active" role="tab" aria-selected="true" data-filter="all">
+                    전체
+                </button>
+                <button class="filter-tab" role="tab" aria-selected="false" data-filter="active">
+                    진행 중
+                </button>
+                <button class="filter-tab" role="tab" aria-selected="false" data-filter="completed">
+                    완료됨
+                </button>
+            </div>
+            <div class="search-box">
+                <span class="search-icon" aria-hidden="true">🔍</span>
+                <input type="text"
+                       class="search-input"
+                       placeholder="할일 검색..."
+                       aria-label="할일 검색"
+                       id="searchInput">
+            </div>
+        </section>
+
+        <!-- Todo Grid -->
+        <section aria-label="할일 목록">
+            <div class="todo-grid" id="todoGrid" th:if="${!todos.isEmpty()}">
+                <article class="todo-card"
+                         th:each="todo : ${todos}"
+                         th:classappend="${'priority-' + todo.priority + (todo.completed ? ' completed' : '')}"
+                         th:data-priority="${todo.priority}"
+                         th:data-completed="${todo.completed}">
+                    <div class="todo-header">
+                        <h2 class="todo-title" th:text="${todo.title}">제목</h2>
+                        <span class="priority-badge"
+                              th:classappend="${todo.priority}"
+                              th:text="${todo.priority == 'HIGH' ? '높음' : todo.priority == 'MEDIUM' ? '보통' : '낮음'}">
+                            높음
+                        </span>
+                    </div>
+                    <p class="todo-description" th:text="${todo.description}">설명</p>
+                    <div class="todo-actions">
+                        <label class="checkbox-wrapper">
+                            <div class="checkbox-custom" th:classappend="${todo.completed ? 'checked' : ''}"></div>
+                            <span th:text="${todo.completed ? '완료됨' : '미완료'}">미완료</span>
+                            <input type="checkbox" class="sr-only" th:checked="${todo.completed}"
+                                   th:attr="data-id=${todo.id}"
+                                   aria-label="할일 완료 상태 토글">
+                        </label>
+                        <div style="margin-left: auto; display: flex; gap: var(--spacing-sm);">
+                            <a th:href="@{'/view/todos/' + ${todo.id} + '/edit'}"
+                               class="btn btn-secondary btn-icon"
+                               th:attr="aria-label=${'수정: ' + todo.title}">
+                                ✏️
+                            </a>
+                            <a th:href="@{'/view/todos/' + ${todo.id} + '/delete'}"
+                               class="btn btn-danger btn-icon"
+                               th:attr="aria-label=${'삭제: ' + todo.title}"
+                               onclick="return confirm('정말 삭제하시겠습니까?')">
+                                🗑️
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" th:if="${todos.isEmpty()}">
+                <div class="empty-state-icon">📋</div>
+                <h2 class="empty-state-title">할일이 없습니다</h2>
+                <p class="empty-state-text">새로운 할일을 추가하여 시작하세요!</p>
+                <a href="/view/todos/new" class="btn btn-primary btn-lg">
+                    <span>+</span>
+                    <span>첫 할일 만들기</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Checkbox toggle functionality
+        const checkboxes = document.querySelectorAll('.checkbox-wrapper input[type="checkbox"]');
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', async function() {
+                const todoId = this.dataset.id;
+                const checkboxCustom = this.parentElement.querySelector('.checkbox-custom');
+                const statusText = this.parentElement.querySelector('span');
+                const todoCard = this.closest('.todo-card');
+
+                try {
+                    // Send AJAX request to toggle completion
+                    const response = await fetch(`/todos/${todoId}/toggle`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const updatedTodo = await response.json();
+
+                        // Update UI
+                        if (updatedTodo.completed) {
+                            checkboxCustom.classList.add('checked');
+                            statusText.textContent = '완료됨';
+                            todoCard.classList.add('completed');
+                            todoCard.dataset.completed = 'true';
+                        } else {
+                            checkboxCustom.classList.remove('checked');
+                            statusText.textContent = '미완료';
+                            todoCard.classList.remove('completed');
+                            todoCard.dataset.completed = 'false';
+                        }
+
+                        // Reload page to update statistics
+                        setTimeout(() => location.reload(), 300);
+                    } else {
+                        console.error('Failed to toggle todo completion');
+                        // Revert checkbox state
+                        this.checked = !this.checked;
+                    }
+                } catch (error) {
+                    console.error('Error toggling todo:', error);
+                    // Revert checkbox state
+                    this.checked = !this.checked;
+                }
+            });
+        });
+
+        // Filter functionality
+        const filterTabs = document.querySelectorAll('.filter-tab');
+        const todoCards = document.querySelectorAll('.todo-card');
+
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Update active tab
+                filterTabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.setAttribute('aria-selected', 'false');
+                });
+                tab.classList.add('active');
+                tab.setAttribute('aria-selected', 'true');
+
+                const filter = tab.dataset.filter;
+
+                todoCards.forEach(card => {
+                    const isCompleted = card.dataset.completed === 'true';
+
+                    if (filter === 'all') {
+                        card.style.display = '';
+                    } else if (filter === 'active' && !isCompleted) {
+                        card.style.display = '';
+                    } else if (filter === 'completed' && isCompleted) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+
+            todoCards.forEach(card => {
+                const title = card.querySelector('.todo-title').textContent.toLowerCase();
+                const description = card.querySelector('.todo-description').textContent.toLowerCase();
+
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // 'n' for new todo (when not typing)
+            if (e.key === 'n' && !e.target.matches('input, textarea')) {
+                window.location.href = '/view/todos/new';
+            }
+
+            // '/' for search
+            if (e.key === '/') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>

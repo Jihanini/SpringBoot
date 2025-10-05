@@ -7,19 +7,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-    @RequestMapping("/view/todos")
+@RequestMapping("/view/todos")
 public class TodoViewController {
-    // 메인 페이지 (http://localhost:8080/)
-    @GetMapping("/view/todos")
-    public String mainPage() {
-        return "main"; // templates/main.html 렌더링
-    }
-
-    // correction 페이지 (http://localhost:8080/correction)
-    @GetMapping("/view/todos/correction")
-    public String correctionPage() {
-        return "correction"; // templates/correction.html 렌더링
-    }
 
     private final TodoService service;
 
@@ -28,10 +17,16 @@ public class TodoViewController {
     }
 
     //메인 페이지 (할일 목록)
-    @GetMapping("/view/todos")
+    @GetMapping
     public String list(Model model) {
         model.addAttribute("todos", service.getAllTodos());
-        return "main"; // main.html 한번 거쳐가라
+        return "main";
+    }
+
+    // correction 페이지
+    @GetMapping("/correction")
+    public String correctionPage() {
+        return "correction";
     }
 
     //새할일 추가

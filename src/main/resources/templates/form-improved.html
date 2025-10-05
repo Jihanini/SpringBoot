@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${todo.id != null ? '할일 수정' : '새 할일 추가'}">할일 관리</title>
+    <style>
+        /* ==================== CSS Variables ==================== */
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-500: #6B7280;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ==================== Reset & Base ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-800);
+            background: var(--gray-50);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-md);
+        }
+
+        /* ==================== Form Container ==================== */
+        .form-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: var(--spacing-2xl);
+        }
+
+        .form-header {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .form-subtitle {
+            color: var(--gray-500);
+            margin-top: var(--spacing-sm);
+        }
+
+        /* ==================== Form Elements ==================== */
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.875rem;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: var(--danger);
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all var(--transition);
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input:invalid:not(:placeholder-shown),
+        .form-textarea:invalid:not(:placeholder-shown) {
+            border-color: var(--danger);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-help {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-top: var(--spacing-sm);
+        }
+
+        /* ==================== Priority Select ==================== */
+        .priority-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+        }
+
+        .priority-option {
+            position: relative;
+        }
+
+        .priority-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .priority-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-lg);
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition);
+            background: white;
+        }
+
+        .priority-option input[type="radio"]:checked + .priority-label {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .priority-option input[type="radio"]:focus-visible + .priority-label {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .priority-label:hover {
+            border-color: var(--primary);
+        }
+
+        .priority-icon {
+            font-size: 1.5rem;
+        }
+
+        .priority-name {
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .priority-HIGH .priority-label {
+            border-color: var(--danger);
+        }
+
+        .priority-HIGH input[type="radio"]:checked + .priority-label {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.05);
+            color: var(--danger);
+        }
+
+        .priority-MEDIUM .priority-label {
+            border-color: var(--warning);
+        }
+
+        .priority-MEDIUM input[type="radio"]:checked + .priority-label {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+            color: var(--warning);
+        }
+
+        .priority-LOW .priority-label {
+            border-color: var(--success);
+        }
+
+        .priority-LOW input[type="radio"]:checked + .priority-label {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+            color: var(--success);
+        }
+
+        /* ==================== Checkbox ==================== */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg);
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+        }
+
+        .checkbox-custom {
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition);
+        }
+
+        .checkbox-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .checkbox-input:checked + .checkbox-custom {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .checkbox-input:checked + .checkbox-custom::after {
+            content: '✓';
+            color: white;
+            font-weight: 700;
+        }
+
+        .checkbox-input:focus-visible + .checkbox-custom {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .checkbox-label {
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        /* ==================== Buttons ==================== */
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md) var(--spacing-xl);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+
+        /* ==================== Validation Feedback ==================== */
+        .form-error {
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: var(--spacing-sm);
+            display: none;
+        }
+
+        .form-input:invalid:not(:placeholder-shown) ~ .form-error,
+        .form-textarea:invalid:not(:placeholder-shown) ~ .form-error {
+            display: block;
+        }
+
+        /* ==================== Character Counter ==================== */
+        .char-counter {
+            text-align: right;
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-top: var(--spacing-sm);
+        }
+
+        /* ==================== Responsive ==================== */
+        @media (max-width: 640px) {
+            .form-container {
+                padding: var(--spacing-lg);
+            }
+
+            .form-title {
+                font-size: 1.5rem;
+            }
+
+            .priority-options {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <h1 class="form-title">
+                <span th:text="${todo.id != null ? '✏️' : '➕'}">➕</span>
+                <span th:text="${todo.id != null ? '할일 수정' : '새 할일 추가'}">새 할일 추가</span>
+            </h1>
+            <p class="form-subtitle" th:text="${todo.id != null ? '할일 정보를 수정하세요' : '새로운 할일을 추가하세요'}">
+                새로운 할일을 추가하세요
+            </p>
+        </div>
+
+        <form action="/view/todos" method="post" th:object="${todo}" id="todoForm">
+            <input type="hidden" th:field="*{id}" />
+
+            <!-- Title -->
+            <div class="form-group">
+                <label class="form-label required" for="title">제목</label>
+                <input type="text"
+                       id="title"
+                       class="form-input"
+                       th:field="*{title}"
+                       placeholder="할일 제목을 입력하세요"
+                       required
+                       maxlength="100"
+                       aria-required="true"
+                       aria-describedby="titleHelp titleError">
+                <span class="form-help" id="titleHelp">명확하고 간결한 제목을 입력하세요 (최대 100자)</span>
+                <span class="form-error" id="titleError">제목을 입력해주세요</span>
+                <div class="char-counter">
+                    <span id="titleCount">0</span> / 100
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label class="form-label" for="description">설명</label>
+                <textarea id="description"
+                          class="form-textarea"
+                          th:field="*{description}"
+                          placeholder="할일에 대한 자세한 설명을 입력하세요 (선택사항)"
+                          maxlength="500"
+                          aria-describedby="descHelp"></textarea>
+                <span class="form-help" id="descHelp">할일에 대한 추가 정보를 입력하세요 (최대 500자)</span>
+                <div class="char-counter">
+                    <span id="descCount">0</span> / 500
+                </div>
+            </div>
+
+            <!-- Priority -->
+            <div class="form-group">
+                <label class="form-label required">우선순위</label>
+                <div class="priority-options" role="radiogroup" aria-label="우선순위 선택">
+                    <div class="priority-option priority-HIGH">
+                        <input type="radio"
+                               id="priorityHigh"
+                               th:field="*{priority}"
+                               value="HIGH"
+                               required>
+                        <label class="priority-label" for="priorityHigh">
+                            <span class="priority-icon">🔴</span>
+                            <span class="priority-name">높음</span>
+                        </label>
+                    </div>
+                    <div class="priority-option priority-MEDIUM">
+                        <input type="radio"
+                               id="priorityMedium"
+                               th:field="*{priority}"
+                               value="MEDIUM">
+                        <label class="priority-label" for="priorityMedium">
+                            <span class="priority-icon">🟠</span>
+                            <span class="priority-name">보통</span>
+                        </label>
+                    </div>
+                    <div class="priority-option priority-LOW">
+                        <input type="radio"
+                               id="priorityLow"
+                               th:field="*{priority}"
+                               value="LOW">
+                        <label class="priority-label" for="priorityLow">
+                            <span class="priority-icon">🟢</span>
+                            <span class="priority-name">낮음</span>
+                        </label>
+                    </div>
+                </div>
+                <span class="form-help">할일의 중요도를 선택하세요</span>
+            </div>
+
+            <!-- Completed -->
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox"
+                               id="completed"
+                               th:field="*{completed}"
+                               class="checkbox-input"
+                               aria-describedby="completedHelp">
+                        <div class="checkbox-custom"></div>
+                        <span class="checkbox-label">완료 여부</span>
+                    </label>
+                    <span class="form-help" id="completedHelp">이미 완료된 할일인 경우 체크하세요</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <a href="/view/todos" class="btn btn-secondary">
+                    <span>취소</span>
+                </a>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <span th:text="${todo.id != null ? '수정 완료' : '추가하기'}">추가하기</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Character counters
+        const titleInput = document.getElementById('title');
+        const titleCount = document.getElementById('titleCount');
+        const descInput = document.getElementById('description');
+        const descCount = document.getElementById('descCount');
+
+        function updateCharCount() {
+            titleCount.textContent = titleInput.value.length;
+            descCount.textContent = descInput.value.length;
+        }
+
+        titleInput.addEventListener('input', updateCharCount);
+        descInput.addEventListener('input', updateCharCount);
+
+        // Initialize counts
+        updateCharCount();
+
+        // Auto-focus on title
+        window.addEventListener('load', () => {
+            titleInput.focus();
+        });
+
+        // Form validation
+        const form = document.getElementById('todoForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', (e) => {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                titleInput.reportValidity();
+                return;
+            }
+
+            // Disable submit button to prevent double submission
+            submitBtn.disabled = true;
+            submitBtn.textContent = '처리 중...';
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Escape to cancel
+            if (e.key === 'Escape') {
+                if (confirm('변경사항을 취소하고 목록으로 돌아가시겠습니까?')) {
+                    window.location.href = '/view/todos';
+                }
+            }
+
+            // Ctrl/Cmd + Enter to submit
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                form.requestSubmit();
+            }
+        });
+    </script>
+</body>
+</html>
