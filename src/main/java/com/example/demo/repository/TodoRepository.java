@@ -2,7 +2,8 @@ package com.example.demo.repository;
 
 import com.example.demo.model.Todo;
 import org.springframework.stereotype.Repository;
-
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -11,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Repository
 public class TodoRepository {
-    private final Map<Long, Todo> store = new HashMap<>();
+    private final ConcurrentMap<Long, Todo> store = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong();
 
     // 생성 (Create)

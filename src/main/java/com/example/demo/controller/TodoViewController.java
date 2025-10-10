@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.exception.TodoNotFoundException;
 import com.example.demo.model.Todo;
 import com.example.demo.service.TodoService;
 import org.springframework.stereotype.Controller;
@@ -39,7 +40,8 @@ public class TodoViewController {
     // 수정 폼
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
-        Todo todo = service.getTodoById(id).orElseThrow();
+        Todo todo = service.getTodoById(id)
+                .orElseThrow(() -> new TodoNotFoundException(id)); // 의미 있는 예외 발생
         model.addAttribute("todo", todo);
         return "form-improved";
     }
