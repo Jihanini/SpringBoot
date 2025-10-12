@@ -1,5 +1,4 @@
 package com.example.demo.exception;
-import com.example.demo.model.Todo;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;

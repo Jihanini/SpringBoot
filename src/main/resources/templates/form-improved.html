@@ -392,13 +392,13 @@
                        th:field="*{title}"
                        placeholder="할일 제목을 입력하세요"
                        required
-                       maxlength="100"
+                       maxlength="10"
                        aria-required="true"
                        aria-describedby="titleHelp titleError">
-                <span class="form-help" id="titleHelp">명확하고 간결한 제목을 입력하세요 (최대 100자)</span>
+                <span class="form-help" id="titleHelp">명확하고 간결한 제목을 입력하세요 (최대 10자)</span>
                 <span class="form-error" id="titleError">제목을 입력해주세요</span>
                 <div class="char-counter">
-                    <span id="titleCount">0</span> / 100
+                    <span id="titleCount">0</span> / 10
                 </div>
             </div>
 
@@ -409,11 +409,11 @@
                           class="form-textarea"
                           th:field="*{description}"
                           placeholder="할일에 대한 자세한 설명을 입력하세요 (선택사항)"
-                          maxlength="500"
+                          maxlength="1000"
                           aria-describedby="descHelp"></textarea>
-                <span class="form-help" id="descHelp">할일에 대한 추가 정보를 입력하세요 (최대 500자)</span>
+                <span class="form-help" id="descHelp">할일에 대한 추가 정보를 입력하세요 (최대 1000자)</span>
                 <div class="char-counter">
-                    <span id="descCount">0</span> / 500
+                    <span id="descCount">0</span> / 1000
                 </div>
             </div>
 

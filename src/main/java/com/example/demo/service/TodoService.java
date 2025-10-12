@@ -40,7 +40,7 @@ public class TodoService {
     // 추가 기능: 완료/미완료 필터링
     public List<Todo> filterByCompletion(boolean completed) {
         return repo.findAll().stream()
-                .filter(todo -> todo.isCompleted() == completed)
+                .filter(todo -> todo.getCompleted() == completed)
                 .collect(Collectors.toList());
     }
 

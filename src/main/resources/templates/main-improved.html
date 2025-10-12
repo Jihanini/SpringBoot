@@ -551,6 +551,13 @@
                        aria-label="할일 검색"
                        id="searchInput">
             </div>
+            <div class="extra-actions mt-lg" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button class="btn btn-secondary" onclick="sortByPriority()">우선순위 정렬</button>
+                <button class="btn btn-secondary" onclick="showCompleted()">완료만 보기</button>
+                <button class="btn btn-secondary" onclick="showActive()">미완료만 보기</button>
+                <button class="btn btn-primary" onclick="countTodos()">전체 개수 보기</button>
+            </div>
+
         </section>
 
         <!-- Todo Grid -->
@@ -722,6 +729,34 @@
                 searchInput.focus();
             }
         });
+    </script>
+    <script>
+        function sortByPriority() {
+            const grid = document.getElementById('todoGrid');
+            const cards = Array.from(grid.querySelectorAll('.todo-card'));
+            cards.sort((a, b) => {
+                const order = { HIGH: 1, MEDIUM: 2, LOW: 3 };
+                return order[a.dataset.priority] - order[b.dataset.priority];
+            });
+            cards.forEach(card => grid.appendChild(card));
+        }
+
+        function showCompleted() {
+            document.querySelectorAll('.todo-card').forEach(card => {
+                card.style.display = card.dataset.completed === 'true' ? '' : 'none';
+            });
+        }
+
+        function showActive() {
+            document.querySelectorAll('.todo-card').forEach(card => {
+                card.style.display = card.dataset.completed === 'false' ? '' : 'none';
+            });
+        }
+
+        function countTodos() {
+            const total = document.querySelectorAll('.todo-card').length;
+            alert(`현재 할일 개수: ${total}개`);
+        }
     </script>
 </body>
 </html>
