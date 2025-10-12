@@ -40,7 +40,7 @@ public class TodoRepository {
     }
 
 
-    // 삭제(Delete
+    // 삭제(Delete)
     public void delete(Long id) {
         store.remove(id);
     }

@@ -16,13 +16,13 @@ public class TodoController {
         this.service = service;
     }
 
-    //create
+    //생성
     @PostMapping
     public Todo create(@RequestBody Todo todo) {
         return service.createTodo(todo);
     }
     
-    //Read 전체조회
+    //전체조회
     @GetMapping
     public List<Todo> getAll() {
         return service.getAllTodos();
@@ -34,12 +34,12 @@ public class TodoController {
         return service.getTodoById(id);
     }
 
-    //update
+    //업데이트
     @PutMapping("/{id}")
     public Todo update(@PathVariable Long id, @RequestBody Todo todo) {
         return service.updateTodo(id, todo);
     }
-    // Delete
+    // 삭제
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         service.deleteTodo(id);
