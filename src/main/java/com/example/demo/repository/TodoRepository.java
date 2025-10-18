@@ -44,5 +44,10 @@ public class TodoRepository {
     public void delete(Long id) {
         store.remove(id);
     }
+    //존재 여부 확인
+    public boolean existsById(Long id) {
+        return store.containsKey(id);
+    }
+
 
 }

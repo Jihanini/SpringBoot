@@ -62,4 +62,9 @@ public class TodoService {
     public long countTodos() {
         return repo.findAll().size();
     }
+
+    public boolean existsById(Long id) {
+        return repo.existsById(id);
+    }
+
 }

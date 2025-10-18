@@ -4,6 +4,7 @@ import com.example.demo.exception.TodoNotFoundException;
 import com.example.demo.model.Todo;
 import com.example.demo.service.TodoService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/view/todos")
 public class TodoViewController {
@@ -37,7 +39,7 @@ public class TodoViewController {
     }
 
     //완료/미완료 필터링
-    @GetMapping("/filter")
+    @GetMapping("/view/todos/filter")
     public String filterByCompletion(boolean completed, Model model) {
         List<Todo> filtered = service.filterByCompletion(completed);
         model.addAttribute("todos", filtered);
@@ -47,7 +49,7 @@ public class TodoViewController {
     }
 
     // 우선순위별 정렬
-    @GetMapping("/sort")
+    @GetMapping("/view/todos/sort")
     public String sortByPriority(Model model) {
         List<Todo> sorted = service.sortByPriority();
         model.addAttribute("todos", sorted);
@@ -57,7 +59,7 @@ public class TodoViewController {
     }
 
     // 제목 검색
-    @GetMapping("/search")
+    @GetMapping("/view/todos/search")
     public String searchByTitle(@RequestParam String keyword, Model model) {
         List<Todo> result = service.searchByTitle(keyword);
         model.addAttribute("todos", result);
@@ -65,6 +67,15 @@ public class TodoViewController {
         model.addAttribute("count", result.size());
         return "main-improved";
     }
+
+    //  할일 개수 카운트
+    @GetMapping("/view/todos/count")
+    public String showCount(Model model) {
+        long count = service.countTodos();
+        model.addAttribute("count", count);
+        return "main-improved";
+    }
+
 
 
 

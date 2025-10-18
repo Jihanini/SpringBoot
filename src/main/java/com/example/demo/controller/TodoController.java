@@ -1,9 +1,14 @@
 package com.example.demo.controller;
 import com.example.demo.model.Todo;
-import com.example.demo.service.*;
+import com.example.demo.service.TodoService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
+import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -18,8 +23,10 @@ public class TodoController {
 
     //생성
     @PostMapping
-    public Todo create(@RequestBody Todo todo) {
-        return service.createTodo(todo);
+    public ResponseEntity<Todo> create(@Valid@RequestBody Todo todo)
+    { Todo createdTodo = service.createTodo(todo);
+        URI location = URI.create("/todos/" + createdTodo.getId());
+        return ResponseEntity.created(location).body(createdTodo);
     }
     
     //전체조회
@@ -30,34 +37,59 @@ public class TodoController {
     
     //상세조회
     @GetMapping("/{id}")
-    public Optional<Todo> getById(@PathVariable Long id) {
-        return service.getTodoById(id);
+    public ResponseEntity<Todo> getById(@PathVariable Long id) {
+        return service.getTodoById(id)
+                .map(ResponseEntity::ok)  //존재할 경우 200 OK
+                .orElse(ResponseEntity.notFound().build());  // 존재하지 않을 경우 404 에러 발생
     }
 
     //업데이트
     @PutMapping("/{id}")
-    public Todo update(@PathVariable Long id, @RequestBody Todo todo) {
-        return service.updateTodo(id, todo);
+    public ResponseEntity<Todo> update(@PathVariable Long id, @RequestBody Todo todo) {
+        if (!service.existsById(id)) {
+            return ResponseEntity.notFound().build();  // 존재하지 않으면 404
+        }
+        Todo updated = service.updateTodo(id, todo);
+        return ResponseEntity.ok(updated);
     }
+
+
     // 삭제
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        if (!service.existsById(id)) {
+            return ResponseEntity.notFound().build();  // 존재하지 않으면 404
+        }
         service.deleteTodo(id);
+        return ResponseEntity.noContent().build(); // 성공 시 204
     }
+
     // 추가 기능
-    @GetMapping("/filter")
+    @GetMapping("/todos/filter")
     public List<Todo> filterByCompletion(@RequestParam boolean completed) {
         return service.filterByCompletion(completed);
     }
 
-    @GetMapping("/search")
+    @GetMapping("/todos/search")
     public List<Todo> search(@RequestParam String keyword) {
         return service.searchByTitle(keyword);
     }
 
-    @GetMapping("/count")
+    @GetMapping("/todos/count")
     public long count() {
         return service.countTodos();
+    }
+
+    @GetMapping("/todos/sort")
+    public Map<String, Object> sortByPriority() {
+        List<Todo> sorted = service.sortByPriority();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("sortType", "priority");
+        response.put("count", sorted.size());
+        response.put("todos", sorted);
+
+        return response;
     }
 
 
