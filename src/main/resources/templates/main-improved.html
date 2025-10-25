@@ -487,276 +487,138 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="app-header">
-        <div class="container">
-            <div class="header-content">
-                <h1 class="app-title">
-                    <span>📝</span>
-                    <span>할일 관리</span>
-                </h1>
-                <a href="/view/todos/new" class="btn btn-primary btn-lg">
-                    <span>+</span>
-                    <span>새 할일 추가</span>
-                </a>
+<!-- Header -->
+<header class="app-header">
+    <div class="container">
+        <div class="header-content">
+            <h1 class="app-title">
+                <span>📝</span>
+                <span>할일 관리</span>
+            </h1>
+            <a href="/view/todos/new" class="btn btn-primary btn-lg">
+                <span>+</span>
+                <span>새 할일 추가</span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <!-- Stats Bar -->
+    <section class="stats-bar" aria-label="할일 통계">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value" th:text="${todos.size()}">0</div>
+                <div class="stat-label">전체 할일</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" th:text="${completedCount}">0</div>
+                <div class="stat-label">완료</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" th:text="${activeCount}">0</div>
+                <div class="stat-label">진행 중</div>
             </div>
         </div>
-    </header>
-
-    <main class="container">
-        <!-- Stats Bar -->
-        <section class="stats-bar" aria-label="할일 통계">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-value" th:text="${todos.size()}">0</div>
-                    <div class="stat-label">전체 할일</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" th:text="${completedCount}">0</div>
-                    <div class="stat-label">완료</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" th:text="${activeCount}">0</div>
-                    <div class="stat-label">진행 중</div>
-                </div>
-            </div>
-            <div class="progress-bar" role="progressbar"
-                 th:attr="aria-valuenow=${progressPercent},
+        <div class="progress-bar" role="progressbar"
+             th:attr="aria-valuenow=${progressPercent},
                          aria-valuemin=0,
                          aria-valuemax=100">
-                <div class="progress-fill"
-                     th:style="${'width: ' + progressPercent + '%'}">
-                </div>
+            <div class="progress-fill"
+                 th:style="${'width: ' + progressPercent + '%'}">
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Filters -->
-        <section class="filters-section" aria-label="필터 및 검색">
-            <div class="filter-tabs" role="tablist">
-                <button class="filter-tab active" role="tab" aria-selected="true" data-filter="all">
-                    전체
-                </button>
-                <button class="filter-tab" role="tab" aria-selected="false" data-filter="active">
-                    진행 중
-                </button>
-                <button class="filter-tab" role="tab" aria-selected="false" data-filter="completed">
-                    완료됨
-                </button>
-            </div>
-            <div class="search-box">
-                <span class="search-icon" aria-hidden="true">🔍</span>
-                <input type="text"
-                       class="search-input"
-                       placeholder="할일 검색..."
-                       aria-label="할일 검색"
-                       id="searchInput">
-            </div>
-            <div class="extra-actions mt-lg" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                <button class="btn btn-secondary" onclick="sortByPriority()">우선순위 정렬</button>
-                <button class="btn btn-secondary" onclick="showCompleted()">완료만 보기</button>
-                <button class="btn btn-secondary" onclick="showActive()">미완료만 보기</button>
-                <button class="btn btn-primary" onclick="countTodos()">전체 개수 보기</button>
-            </div>
+    <!-- Filters & Search -->
+    <section class="filters-section" aria-label="필터 및 검색">
+        <div class="filter-tabs" role="tablist">
+            <a th:href="@{/view/todos}"
+               class="filter-tab"
+               th:classappend="${filter=='all'} ? ' active' : ''"
+               role="tab" aria-selected="${filter=='all'}">
+                전체
+            </a>
+            <a th:href="@{/view/todos(filter='active')}"
+               class="filter-tab"
+               th:classappend="${filter=='active'} ? ' active' : ''"
+               role="tab" aria-selected="${filter=='active'}">
+                진행 중
+            </a>
+            <a th:href="@{/view/todos(filter='completed')}"
+               class="filter-tab"
+               th:classappend="${filter=='completed'} ? ' active' : ''"
+               role="tab" aria-selected="${filter=='completed'}">
+                완료됨
+            </a>
+        </div>
+        <form th:action="@{/view/todos}" method="get" class="search-box">
+            <input type="text"
+                   name="keyword"
+                   class="search-input"
+                   placeholder="할일 검색..."
+                   th:value="${keyword}"
+                   aria-label="할일 검색">
+            <button type="submit" class="btn btn-secondary btn-icon">🔍</button>
+        </form>
+        <div class="extra-actions mt-lg" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <a th:href="@{/view/todos(sort='priority')}" class="btn btn-secondary">우선순위 정렬</a>
+            <a th:href="@{/view/todos(filter='completed')}" class="btn btn-secondary">완료만 보기</a>
+            <a th:href="@{/view/todos(filter='active')}" class="btn btn-secondary">미완료만 보기</a>
+            <span class="btn btn-primary" th:text="'총 ' + ${todos.size()} + '개'">총 0개</span>
+        </div>
+    </section>
 
-        </section>
-
-        <!-- Todo Grid -->
-        <section aria-label="할일 목록">
-            <div class="todo-grid" id="todoGrid" th:if="${!todos.isEmpty()}">
-                <article class="todo-card"
-                         th:each="todo : ${todos}"
-                         th:classappend="${'priority-' + todo.priority + (todo.completed ? ' completed' : '')}"
-                         th:data-priority="${todo.priority}"
-                         th:data-completed="${todo.completed}">
-                    <div class="todo-header">
-                        <h2 class="todo-title" th:text="${todo.title}">제목</h2>
-                        <span class="priority-badge"
-                              th:classappend="${todo.priority}"
-                              th:text="${todo.priority == 'HIGH' ? '높음' : todo.priority == 'MEDIUM' ? '보통' : '낮음'}">
+    <!-- Todo Grid -->
+    <section aria-label="할일 목록">
+        <div class="todo-grid" th:if="${!todos.isEmpty()}">
+            <article class="todo-card"
+                     th:each="todo : ${todos}"
+                     th:classappend="${'priority-' + todo.priority + (todo.completed ? ' completed' : '')}">
+                <div class="todo-header">
+                    <h2 class="todo-title" th:text="${todo.title}">제목</h2>
+                    <span class="priority-badge"
+                          th:classappend="${todo.priority}"
+                          th:text="${todo.priority == 'HIGH' ? '높음' : todo.priority == 'MEDIUM' ? '보통' : '낮음'}">
                             높음
                         </span>
+                </div>
+                <p class="todo-description" th:text="${todo.description}">설명</p>
+                <div class="todo-actions">
+                    <form th:action="@{'/view/todos/' + ${todo.id} + '/toggle'}" method="post">
+                        <button type="submit" class="btn btn-secondary btn-icon"
+                                th:text="${todo.completed ? '완료됨' : '미완료'}">
+                            미완료
+                        </button>
+                    </form>
+                    <div style="margin-left: auto; display: flex; gap: var(--spacing-sm);">
+                        <a th:href="@{'/view/todos/' + ${todo.id} + '/edit'}"
+                           class="btn btn-secondary btn-icon"
+                           th:attr="aria-label=${'수정: ' + todo.title}">
+                            ✏️
+                        </a>
+                        <a th:href="@{'/view/todos/' + ${todo.id} + '/delete'}"
+                           class="btn btn-danger btn-icon"
+                           th:attr="aria-label=${'삭제: ' + todo.title}"
+                           onclick="return confirm('정말 삭제하시겠습니까?')">
+                            🗑️
+                        </a>
                     </div>
-                    <p class="todo-description" th:text="${todo.description}">설명</p>
-                    <div class="todo-actions">
-                        <label class="checkbox-wrapper">
-                            <div class="checkbox-custom" th:classappend="${todo.completed ? 'checked' : ''}"></div>
-                            <span th:text="${todo.completed ? '완료됨' : '미완료'}">미완료</span>
-                            <input type="checkbox" class="sr-only" th:checked="${todo.completed}"
-                                   th:attr="data-id=${todo.id}"
-                                   aria-label="할일 완료 상태 토글">
-                        </label>
-                        <div style="margin-left: auto; display: flex; gap: var(--spacing-sm);">
-                            <a th:href="@{'/view/todos/' + ${todo.id} + '/edit'}"
-                               class="btn btn-secondary btn-icon"
-                               th:attr="aria-label=${'수정: ' + todo.title}">
-                                ✏️
-                            </a>
-                            <a th:href="@{'/view/todos/' + ${todo.id} + '/delete'}"
-                               class="btn btn-danger btn-icon"
-                               th:attr="aria-label=${'삭제: ' + todo.title}"
-                               onclick="return confirm('정말 삭제하시겠습니까?')">
-                                🗑️
-                            </a>
-                        </div>
-                    </div>
-                </article>
-            </div>
+                </div>
+            </article>
+        </div>
 
-            <!-- Empty State -->
-            <div class="empty-state" th:if="${todos.isEmpty()}">
-                <div class="empty-state-icon">📋</div>
-                <h2 class="empty-state-title">할일이 없습니다</h2>
-                <p class="empty-state-text">새로운 할일을 추가하여 시작하세요!</p>
-                <a href="/view/todos/new" class="btn btn-primary btn-lg">
-                    <span>+</span>
-                    <span>첫 할일 만들기</span>
-                </a>
-            </div>
-        </section>
-    </main>
-
-    <script>
-        // Checkbox toggle functionality
-        const checkboxes = document.querySelectorAll('.checkbox-wrapper input[type="checkbox"]');
-
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', async function() {
-                const todoId = this.dataset.id;
-                const checkboxCustom = this.parentElement.querySelector('.checkbox-custom');
-                const statusText = this.parentElement.querySelector('span');
-                const todoCard = this.closest('.todo-card');
-
-                try {
-                    // Send AJAX request to toggle completion
-                    const response = await fetch(`/todos/${todoId}/toggle`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (response.ok) {
-                        const updatedTodo = await response.json();
-
-                        // Update UI
-                        if (updatedTodo.completed) {
-                            checkboxCustom.classList.add('checked');
-                            statusText.textContent = '완료됨';
-                            todoCard.classList.add('completed');
-                            todoCard.dataset.completed = 'true';
-                        } else {
-                            checkboxCustom.classList.remove('checked');
-                            statusText.textContent = '미완료';
-                            todoCard.classList.remove('completed');
-                            todoCard.dataset.completed = 'false';
-                        }
-
-                        // Reload page to update statistics
-                        setTimeout(() => location.reload(), 300);
-                    } else {
-                        console.error('Failed to toggle todo completion');
-                        // Revert checkbox state
-                        this.checked = !this.checked;
-                    }
-                } catch (error) {
-                    console.error('Error toggling todo:', error);
-                    // Revert checkbox state
-                    this.checked = !this.checked;
-                }
-            });
-        });
-
-        // Filter functionality
-        const filterTabs = document.querySelectorAll('.filter-tab');
-        const todoCards = document.querySelectorAll('.todo-card');
-
-        filterTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Update active tab
-                filterTabs.forEach(t => {
-                    t.classList.remove('active');
-                    t.setAttribute('aria-selected', 'false');
-                });
-                tab.classList.add('active');
-                tab.setAttribute('aria-selected', 'true');
-
-                const filter = tab.dataset.filter;
-
-                todoCards.forEach(card => {
-                    const isCompleted = card.dataset.completed === 'true';
-
-                    if (filter === 'all') {
-                        card.style.display = '';
-                    } else if (filter === 'active' && !isCompleted) {
-                        card.style.display = '';
-                    } else if (filter === 'completed' && isCompleted) {
-                        card.style.display = '';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            });
-        });
-
-        // Search functionality
-        const searchInput = document.getElementById('searchInput');
-
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-
-            todoCards.forEach(card => {
-                const title = card.querySelector('.todo-title').textContent.toLowerCase();
-                const description = card.querySelector('.todo-description').textContent.toLowerCase();
-
-                if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            // 'n' for new todo (when not typing)
-            if (e.key === 'n' && !e.target.matches('input, textarea')) {
-                window.location.href = '/view/todos/new';
-            }
-
-            // '/' for search
-            if (e.key === '/') {
-                e.preventDefault();
-                searchInput.focus();
-            }
-        });
-    </script>
-    <script>
-        function sortByPriority() {
-            const grid = document.getElementById('todoGrid');
-            const cards = Array.from(grid.querySelectorAll('.todo-card'));
-            cards.sort((a, b) => {
-                const order = { HIGH: 1, MEDIUM: 2, LOW: 3 };
-                return order[a.dataset.priority] - order[b.dataset.priority];
-            });
-            cards.forEach(card => grid.appendChild(card));
-        }
-
-        function showCompleted() {
-            document.querySelectorAll('.todo-card').forEach(card => {
-                card.style.display = card.dataset.completed === 'true' ? '' : 'none';
-            });
-        }
-
-        function showActive() {
-            document.querySelectorAll('.todo-card').forEach(card => {
-                card.style.display = card.dataset.completed === 'false' ? '' : 'none';
-            });
-        }
-
-        function countTodos() {
-            const total = document.querySelectorAll('.todo-card').length;
-            alert(`현재 할일 개수: ${total}개`);
-        }
-    </script>
+        <!-- Empty State -->
+        <div class="empty-state" th:if="${todos.isEmpty()}">
+            <div class="empty-state-icon">📋</div>
+            <h2 class="empty-state-title">할일이 없습니다</h2>
+            <p class="empty-state-text">새로운 할일을 추가하여 시작하세요!</p>
+            <a href="/view/todos/new" class="btn btn-primary btn-lg">
+                <span>+</span>
+                <span>첫 할일 만들기</span>
+            </a>
+        </div>
+    </section>
+</main>
 </body>
 </html>

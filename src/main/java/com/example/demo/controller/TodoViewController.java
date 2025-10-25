@@ -23,7 +23,7 @@ public class TodoViewController {
         this.service = service;
     }
 
-    //메인 페이지 (할일 목록)
+    // 메인 페이지
     @GetMapping
     public String list(Model model) {
         List<Todo> todos = service.getAllTodos();
@@ -35,48 +35,43 @@ public class TodoViewController {
         model.addAttribute("completedCount", completedCount);
         model.addAttribute("activeCount", activeCount);
         model.addAttribute("progressPercent", progressPercent);
+        model.addAttribute("filterType", "전체"); //현재 필터 표시
         return "main-improved";
     }
 
-    //완료/미완료 필터링
-    @GetMapping("/view/todos/filter")
-    public String filterByCompletion(boolean completed, Model model) {
-        List<Todo> filtered = service.filterByCompletion(completed);
-        model.addAttribute("todos", filtered);
-        model.addAttribute("filterType", completed ? "완료된 할 일" : "미완료 할 일");
-        model.addAttribute("count", filtered.size());
+    //검색 기능
+    @GetMapping("/search")
+    public String search(@RequestParam String keyword, Model model) {
+        List<Todo> todos = service.searchByTitle(keyword);
+        model.addAttribute("todos", todos);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("filterType", "검색 결과");
+        model.addAttribute("completedCount", service.filterByCompletion(true).size());
+        model.addAttribute("activeCount", service.filterByCompletion(false).size());
         return "main-improved";
     }
 
-    // 우선순위별 정렬
-    @GetMapping("/view/todos/sort")
+    // 완료 미완료 필터
+    @GetMapping("/filter")
+    public String filterByCompletion(@RequestParam boolean completed, Model model) {
+        List<Todo> todos = service.filterByCompletion(completed);
+        model.addAttribute("todos", todos);
+        model.addAttribute("filterType", completed ? "완료됨" : "미완료");
+        model.addAttribute("completedCount", service.filterByCompletion(true).size());
+        model.addAttribute("activeCount", service.filterByCompletion(false).size());
+        return "main-improved";
+    }
+
+    // 우선순위 정렬
+    @GetMapping("/sort")
     public String sortByPriority(Model model) {
         List<Todo> sorted = service.sortByPriority();
         model.addAttribute("todos", sorted);
-        model.addAttribute("sortType", "priority");
-        model.addAttribute("count", sorted.size());
+        model.addAttribute("filterType", "우선순위 정렬");
+        model.addAttribute("completedCount", service.filterByCompletion(true).size());
+        model.addAttribute("activeCount", service.filterByCompletion(false).size());
         return "main-improved";
     }
-
-    // 제목 검색
-    @GetMapping("/view/todos/search")
-    public String searchByTitle(@RequestParam String keyword, Model model) {
-        List<Todo> result = service.searchByTitle(keyword);
-        model.addAttribute("todos", result);
-        model.addAttribute("searchkeyword", keyword);
-        model.addAttribute("count", result.size());
-        return "main-improved";
-    }
-
-    //  할일 개수 카운트
-    @GetMapping("/view/todos/count")
-    public String showCount(Model model) {
-        long count = service.countTodos();
-        model.addAttribute("count", count);
-        return "main-improved";
-    }
-
-
 
 
     // correction 페이지
@@ -85,7 +80,7 @@ public class TodoViewController {
         return "correction";
     }
 
-    //새할일 추가
+    // 새 할일 추가 폼
     @GetMapping("/new")
     public String newForm(Model model) {
         model.addAttribute("todo", new Todo());
@@ -96,29 +91,33 @@ public class TodoViewController {
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         Todo todo = service.getTodoById(id)
-                .orElseThrow(() -> new TodoNotFoundException(id)); // 의미 있는 예외 발생
+                .orElseThrow(() -> new TodoNotFoundException(id));
         model.addAttribute("todo", todo);
         return "form-improved";
     }
 
-    //저장 관리 (추가나 수정)
+    // 저장 (추가/수정)
     @PostMapping
     public String save(@Valid @ModelAttribute Todo todo, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
-            bindingResult.getAllErrors().forEach(e -> System.out.println(e));
+            log.warn("Validation errors: {}", bindingResult.getAllErrors());
             model.addAttribute("todo", todo);
             return "form-improved";
         }
-        service.createTodo(todo); //id 가 있으면 update 처럼 동작해라
+
+        // id가 있으면 수정, 없으면 생성
+        if (todo.getId() != null && service.existsById(todo.getId())) {
+            service.updateTodo(todo.getId(), todo);
+        } else {
+            service.createTodo(todo);
+        }
         return "redirect:/view/todos";
     }
 
-    //삭제처리
+    // 삭제
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
         service.deleteTodo(id);
         return "redirect:/view/todos";
     }
-
-
 }

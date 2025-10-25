@@ -1,4 +1,5 @@
 package com.example.demo.controller;
+
 import com.example.demo.model.Todo;
 import com.example.demo.service.TodoService;
 import org.springframework.http.ResponseEntity;
@@ -9,32 +10,31 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/todos")
+@RequestMapping("/api/todos")
 public class TodoController {
 
     private final TodoService service;
 
-    public TodoController(TodoService service){
+    public TodoController(TodoService service) {
         this.service = service;
     }
 
     //생성
     @PostMapping
-    public ResponseEntity<Todo> create(@Valid@RequestBody Todo todo)
-    { Todo createdTodo = service.createTodo(todo);
-        URI location = URI.create("/todos/" + createdTodo.getId());
+    public ResponseEntity<Todo> create(@Valid @RequestBody Todo todo) {
+        Todo createdTodo = service.createTodo(todo);
+        URI location = URI.create("/api/todos/" + createdTodo.getId());
         return ResponseEntity.created(location).body(createdTodo);
     }
-    
+
     //전체조회
     @GetMapping
     public List<Todo> getAll() {
         return service.getAllTodos();
     }
-    
+
     //상세조회
     @GetMapping("/{id}")
     public ResponseEntity<Todo> getById(@PathVariable Long id) {
@@ -45,7 +45,7 @@ public class TodoController {
 
     //업데이트
     @PutMapping("/{id}")
-    public ResponseEntity<Todo> update(@PathVariable Long id, @RequestBody Todo todo) {
+    public ResponseEntity<Todo> update(@Valid @PathVariable Long id, @RequestBody Todo todo) {
         if (!service.existsById(id)) {
             return ResponseEntity.notFound().build();  // 존재하지 않으면 404
         }
@@ -65,35 +65,35 @@ public class TodoController {
     }
 
     // 추가 기능
-    @GetMapping("/todos/filter")
+    @GetMapping("/filter")
     public List<Todo> filterByCompletion(@RequestParam boolean completed) {
         return service.filterByCompletion(completed);
     }
 
-    @GetMapping("/todos/search")
+    //검색
+    @GetMapping("/search")
     public List<Todo> search(@RequestParam String keyword) {
         return service.searchByTitle(keyword);
     }
 
-    @GetMapping("/todos/count")
-    public long count() {
-        return service.countTodos();
+    //총 갯수
+    @GetMapping("/count")
+    public Map<String, Long> count() {
+        return Map.of("count", service.countTodos());
+
     }
 
-    @GetMapping("/todos/sort")
+    //정렬
+    @GetMapping("/sort")
     public Map<String, Object> sortByPriority() {
         List<Todo> sorted = service.sortByPriority();
 
         Map<String, Object> response = new HashMap<>();
         response.put("sortType", "priority");
-        response.put("count", sorted.size());
+        response.put("count", (long)sorted.size());
         response.put("todos", sorted);
-
         return response;
     }
-
-
-
 
 
 }
