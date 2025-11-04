@@ -45,7 +45,10 @@ public class TodoController {
 
     //업데이트
     @PutMapping("/{id}")
-    public ResponseEntity<Todo> update(@Valid @PathVariable Long id, @RequestBody Todo todo) {
+    public ResponseEntity<Todo> update( @PathVariable Long id, @Valid @RequestBody Todo todo) {
+        if (todo.getId() != null && !todo.getId().equals(id)) {
+            return ResponseEntity.badRequest().build();
+        }
         if (!service.existsById(id)) {
             return ResponseEntity.notFound().build();  // 존재하지 않으면 404
         }
